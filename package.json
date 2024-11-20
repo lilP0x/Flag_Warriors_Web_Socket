@@ -1,0 +1,12 @@
+{
+  "name": "websocket-server",
+  "version": "1.0.0",
+  "description": "Servidor WebSocket para el juego",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "ws": "^8.5.0" 
+  }
+}

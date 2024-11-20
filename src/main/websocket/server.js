@@ -5,8 +5,7 @@ const playesChannel = {};
 const COUNTDOWN_SECONDS = 180;
 var sendList = false
   
-// Crear un servidor WebSocket en el puerto 8081
-const wss = new WebSocket.Server({ port: 8081 });
+const wss = new WebSocket.Server({ noServer: true });
 wss.on('connection', (ws, req) => {
     // Extraer el sessionId desde la URL
     const url = new URL(req.url || '', `http://${req.headers.host}`);
