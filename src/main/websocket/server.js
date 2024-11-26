@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const MAX_PLAYERS_PER_ROOM = 8;
 const rooms = {};
 const playesChannel = {};
-const COUNTDOWN_SECONDS = 180;
+const COUNTDOWN_SECONDS = 10;
 var sendList = false
   
 // Crear un servidor WebSocket en el puerto 8081
@@ -151,15 +151,18 @@ wss.on('connection', (ws, req) => {
                     
                     rooms["abc123"].players.forEach((player) => {
                         
-                            playesChannel[player.id].send(JSON.stringify({
-                                type: 'flagCaptured',
-                                name: name,
-                                team:team,
-                            }));
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'flagCaptured',
+                            name: name,
+                            team:team,
+                        }));
                         
                         
                     });
+
                     break
+
+
                     case 'actualizarPuntos':
                         rooms["abc123"].players.find(player => player.id == sessionId).score+=1
                         const teamScore = rooms["abc123"].players.find(player => player.id == sessionId).score;
@@ -188,8 +191,20 @@ wss.on('connection', (ws, req) => {
                     
                     });
 
-                    
 
+                case 'powerCaptured':
+
+                    rooms["abc123"].players.forEach((player) => {
+                            
+                            playesChannel[player.id].send(JSON.stringify({
+                                type: 'powerCaptured',
+                                name: name,
+                                team:team,
+                            }));
+                            
+                            
+                        });
+                break
         }
     });
 
@@ -197,9 +212,6 @@ wss.on('connection', (ws, req) => {
         console.log('Jugador desconectado');
     });
 
-    
-
-    
 }
 
 );
