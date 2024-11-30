@@ -194,16 +194,34 @@ wss.on('connection', (ws, req) => {
 
                 case 'powerCaptured':
 
-                    rooms["abc123"].players.forEach((player) => {
-                            
-                            playesChannel[player.id].send(JSON.stringify({
-                                type: 'powerCaptured',
-                                name: name,
-                                team:team,
-                            }));
-                            
-                            
-                        });
+                var team=null
+                var name = null;
+                
+                rooms["abc123"].players.forEach((player) => {
+
+                    if(player.id == sessionId){
+                        player.flag = true;
+                        if(player.team==="A"){
+                            team="B"
+                        }else{
+                            team="A"
+    
+                        }
+                        name = player.name
+                    }
+                    
+                });
+                
+                rooms["abc123"].players.forEach((player) => {
+                    
+                    playesChannel[player.id].send(JSON.stringify({
+                        type: 'powerCaptured',
+                        name: name,
+                        team:team,
+                    }));
+                    
+                    
+                });
                 break
         }
     });
