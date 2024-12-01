@@ -46,10 +46,8 @@ wss.on('connection', (ws, req) => {
                         const minutes = Math.floor(rooms[roomName].countdown / 60);
                         const seconds = rooms[roomName].countdown % 60;
 
-                        // Formatear el tiempo en "mm:ss"
                         const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-                        // Enviar el tiempo restante a todos los jugadores en la sala
                         rooms[roomName].players.forEach((player) => {
                             playesChannel[player.id].send(JSON.stringify({
                                 type: 'countdown',
@@ -57,7 +55,6 @@ wss.on('connection', (ws, req) => {
                             }));
                         });
 
-                        // Detener el temporizador cuando llega a 0 y notificar a los jugadores
                         if (rooms[roomName].countdown <= 0) {
                             clearInterval(rooms[roomName].interval);
                             rooms[roomName].players.forEach((player) => {
