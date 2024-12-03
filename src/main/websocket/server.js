@@ -2,10 +2,11 @@ const WebSocket = require('ws');
 const MAX_PLAYERS_PER_ROOM = 8;
 const rooms = {};
 const playesChannel = {};
-const COUNTDOWN_SECONDS = 180;
+const COUNTDOWN_SECONDS = 10;
 var sendList = false
   
-const wss = new WebSocket.Server({ noServer: true });
+// Crear un servidor WebSocket en el puerto 8081
+const wss = new WebSocket.Server({ port: 8081 });
 wss.on('connection', (ws, req) => {
     // Extraer el sessionId desde la URL
     const url = new URL(req.url || '', `http://${req.headers.host}`);
@@ -45,10 +46,8 @@ wss.on('connection', (ws, req) => {
                         const minutes = Math.floor(rooms[roomName].countdown / 60);
                         const seconds = rooms[roomName].countdown % 60;
 
-                        // Formatear el tiempo en "mm:ss"
                         const formattedTime = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
-                        // Enviar el tiempo restante a todos los jugadores en la sala
                         rooms[roomName].players.forEach((player) => {
                             playesChannel[player.id].send(JSON.stringify({
                                 type: 'countdown',
@@ -56,7 +55,6 @@ wss.on('connection', (ws, req) => {
                             }));
                         });
 
-                        // Detener el temporizador cuando llega a 0 y notificar a los jugadores
                         if (rooms[roomName].countdown <= 0) {
                             clearInterval(rooms[roomName].interval);
                             rooms[roomName].players.forEach((player) => {
@@ -150,15 +148,18 @@ wss.on('connection', (ws, req) => {
                     
                     rooms["abc123"].players.forEach((player) => {
                         
-                            playesChannel[player.id].send(JSON.stringify({
-                                type: 'flagCaptured',
-                                name: name,
-                                team:team,
-                            }));
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'flagCaptured',
+                            name: name,
+                            team:team,
+                        }));
                         
                         
                     });
+
                     break
+
+
                     case 'actualizarPuntos':
                         rooms["abc123"].players.find(player => player.id == sessionId).score+=1
                         const teamScore = rooms["abc123"].players.find(player => player.id == sessionId).score;
@@ -187,8 +188,38 @@ wss.on('connection', (ws, req) => {
                     
                     });
 
-                    
 
+                case 'powerCaptured':
+
+                var team=null
+                var name = null;
+                
+                rooms["abc123"].players.forEach((player) => {
+
+                    if(player.id == sessionId){
+                        player.flag = true;
+                        if(player.team==="A"){
+                            team="B"
+                        }else{
+                            team="A"
+    
+                        }
+                        name = player.name
+                    }
+                    
+                });
+                
+                rooms["abc123"].players.forEach((player) => {
+                    
+                    playesChannel[player.id].send(JSON.stringify({
+                        type: 'powerCaptured',
+                        name: name,
+                        team:team,
+                    }));
+                    
+                    
+                });
+                break
         }
     });
 
@@ -196,9 +227,6 @@ wss.on('connection', (ws, req) => {
         console.log('Jugador desconectado');
     });
 
-    
-
-    
 }
 
 );
