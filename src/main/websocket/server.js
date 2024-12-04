@@ -2,7 +2,7 @@ const WebSocket = require('ws');
 const MAX_PLAYERS_PER_ROOM = 8;
 const rooms = {};
 const playesChannel = {};
-const COUNTDOWN_SECONDS = 180;
+const COUNTDOWN_SECONDS = 15;
 var sendList = false
   
 // Crear un servidor WebSocket en el puerto 8081
@@ -161,22 +161,17 @@ wss.on('connection', (ws, req) => {
                     });
                     break
                     case 'actualizarPuntos':
-                        rooms["abc123"].players.find(player => player.id == sessionId).score+=1
-                        const teamScore = rooms["abc123"].players.find(player => player.id == sessionId).score;
-                        console.log(teamScore)
-
-
-
+                        const currentPlayer = rooms["abc123"].players.find(player => player.id == sessionId);
+                        currentPlayer.score += 1;
+                        
                         rooms["abc123"].players.forEach((player) => {
-                            
                             playesChannel[player.id].send(JSON.stringify({
                                 type: 'actualizarPuntos',
-                                team:teamScore,
+                                team: currentPlayer.team, // Enviar el equipo del jugador, no el puntaje
+                                score: currentPlayer.score
                             }));
-                        
-                        
                         });
-                    break
+                        break
                     case 'finish':
                          
                     rooms["abc123"].players.forEach((player) => {
