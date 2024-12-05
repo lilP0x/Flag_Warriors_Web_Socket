@@ -167,7 +167,7 @@ wss.on('connection', (ws, req) => {
                         rooms["abc123"].players.forEach((player) => {
                             playesChannel[player.id].send(JSON.stringify({
                                 type: 'actualizarPuntos',
-                                team: currentPlayer.team, // Enviar el equipo del jugador, no el puntaje
+                                team: currentPlayer.team, 
                                 score: currentPlayer.score
                             }));
                         });
@@ -183,9 +183,38 @@ wss.on('connection', (ws, req) => {
                     
                     });
 
-                    
+                    case 'powerCaptured':
 
-        }
+                    var team=null
+                    var name = null;
+                    
+                    rooms["abc123"].players.forEach((player) => {
+
+                        if(player.id == sessionId){
+                            if(player.team==="A"){
+                                team="A"
+                            }else{
+                                team="B"
+        
+                            }
+                            name = player.name
+                        }
+                        
+                    });
+                    
+                    rooms["abc123"].players.forEach((player) => {
+                        
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'powerCaptured',
+                            name: name,
+                            team: team,
+                        }));
+                        
+                        
+                    });
+                    break
+                }
+    
     });
 
     ws.on('close', () => {
