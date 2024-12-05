@@ -161,22 +161,17 @@ wss.on('connection', (ws, req) => {
 
 
                     case 'actualizarPuntos':
-                        rooms["abc123"].players.find(player => player.id == sessionId).score+=1
-                        const teamScore = rooms["abc123"].players.find(player => player.id == sessionId).score;
-                        console.log(teamScore)
-
-
-
+                        const currentPlayer = rooms["abc123"].players.find(player => player.id == sessionId);
+                        currentPlayer.score += 1;
+                        
                         rooms["abc123"].players.forEach((player) => {
-                            
                             playesChannel[player.id].send(JSON.stringify({
                                 type: 'actualizarPuntos',
-                                team:teamScore,
+                                team: currentPlayer.team, 
+                                score: currentPlayer.score
                             }));
-                        
-                        
                         });
-                    break
+                        break
                     case 'finish':
                          
                     rooms["abc123"].players.forEach((player) => {
@@ -188,39 +183,38 @@ wss.on('connection', (ws, req) => {
                     
                     });
 
+                    case 'powerCaptured':
 
-                case 'powerCaptured':
+                    var team=null
+                    var name = null;
+                    
+                    rooms["abc123"].players.forEach((player) => {
 
-                var team=null
-                var name = null;
-                
-                rooms["abc123"].players.forEach((player) => {
-
-                    if(player.id == sessionId){
-                        player.flag = true;
-                        if(player.team==="A"){
-                            team="B"
-                        }else{
-                            team="A"
-    
+                        if(player.id == sessionId){
+                            if(player.team==="A"){
+                                team="A"
+                            }else{
+                                team="B"
+        
+                            }
+                            name = player.name
                         }
-                        name = player.name
-                    }
+                        
+                    });
                     
-                });
-                
-                rooms["abc123"].players.forEach((player) => {
-                    
-                    playesChannel[player.id].send(JSON.stringify({
-                        type: 'powerCaptured',
-                        name: name,
-                        team:team,
-                    }));
-                    
-                    
-                });
-                break
-        }
+                    rooms["abc123"].players.forEach((player) => {
+                        
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'powerCaptured',
+                            name: name,
+                            team: team,
+                        }));
+                        
+                        
+                    });
+                    break
+                }
+    
     });
 
     ws.on('close', () => {
