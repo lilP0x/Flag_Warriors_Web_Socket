@@ -161,17 +161,34 @@ wss.on('connection', (ws, req) => {
 
 
                     case 'actualizarPuntos':
-                        const currentPlayer = rooms["abc123"].players.find(player => player.id == sessionId);
-                        currentPlayer.score += 1;
-                        
+                    // Obtener el jugador actual
+                    const currentPlayer = rooms["abc123"].players.find(player => player.id == sessionId);
+
+                    if (!currentPlayer || currentPlayer.score >= 3) return; // Evitar actualizaciones innecesarias
+
+                    // Incrementar puntaje
+                    currentPlayer.score += 1;
+
+                    // Enviar a todos los jugadores el puntaje actualizado
+                    rooms["abc123"].players.forEach((player) => {
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'actualizarPuntos',
+                            team: currentPlayer.team,
+                            score: currentPlayer.score
+                        }));
+                    });
+
+                    // Si el puntaje alcanza 3, finalizar el juego
+                    if (currentPlayer.score >= 3) {
                         rooms["abc123"].players.forEach((player) => {
                             playesChannel[player.id].send(JSON.stringify({
-                                type: 'actualizarPuntos',
-                                team: currentPlayer.team, 
-                                score: currentPlayer.score
+                                type: 'finish',
+                                winner: currentPlayer.team
                             }));
                         });
-                        break
+                    }
+                    break;
+
                     case 'finish':
                          
                     rooms["abc123"].players.forEach((player) => {
@@ -201,11 +218,22 @@ wss.on('connection', (ws, req) => {
                         }
                         
                     });
-                    
+
                     rooms["abc123"].players.forEach((player) => {
                         
                         playesChannel[player.id].send(JSON.stringify({
                             type: 'powerCaptured',
+                            name: name,
+                            team: team,
+                        }));
+                        
+                        
+                    });
+                    
+                    rooms["abc123"].players.forEach((player) => {
+                        
+                        playesChannel[player.id].send(JSON.stringify({
+                            type: 'actualizarPuntos',
                             name: name,
                             team: team,
                         }));
