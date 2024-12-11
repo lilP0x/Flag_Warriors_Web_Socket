@@ -10,6 +10,7 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "websocket": "file:",
     "ws": "^8.18.0"
   }
 }
