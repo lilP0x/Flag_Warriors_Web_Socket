@@ -4,7 +4,7 @@ const rooms = {};
 const playesChannel = {};
 const COUNTDOWN_SECONDS = 10;
 var sendList = false
-  
+
 // Crear un servidor WebSocket en el puerto 8081
 const wss = new WebSocket.Server({ port: 8081 });
 wss.on('connection', (ws, req) => {
@@ -20,7 +20,7 @@ wss.on('connection', (ws, req) => {
         const data = JSON.parse(message);
         switch (data.type) {
             case 'startGame':
-                if(!sendList){
+                if (!sendList) {
                     rooms["abc123"].players.forEach((player) => {
                         playesChannel[player.id].send(JSON.stringify({
                             type: 'startGame',
@@ -28,14 +28,15 @@ wss.on('connection', (ws, req) => {
                         }));
                     });
                 }
-               sendList = true;
+                sendList = true;
                 break
+
             case 'joinRoom':
                 const roomName = data.code;
                 if (!rooms[roomName]) {
                     rooms[roomName] = {
                         players: [],
-                        countdown: COUNTDOWN_SECONDS, 
+                        countdown: COUNTDOWN_SECONDS,
                         interval: null
                     };
 
@@ -56,6 +57,8 @@ wss.on('connection', (ws, req) => {
                         });
 
                         if (rooms[roomName].countdown <= 0) {
+                            this.COUNTDOWN_SECONDS = 10
+                            this.countdown = 10
                             clearInterval(rooms[roomName].interval);
                             rooms[roomName].players.forEach((player) => {
                                 playesChannel[player.id].send(JSON.stringify({
@@ -84,11 +87,11 @@ wss.on('connection', (ws, req) => {
                     id: data.playerId,
                     name: data.name,
                     path: data.path,
-                    team : data.team,
-                    score : data.teamScore,
+                    team: data.team,
+                    score: data.teamScore,
                     flag: data.flag,
                     x: data.x,
-                    y:data.y
+                    y: data.y
                 };
 
 
@@ -102,122 +105,134 @@ wss.on('connection', (ws, req) => {
                             player: newPlayer,
                             players: rooms[roomName].players
                         }));
-                    
+
                     });
                     console.log(`Jugador ${newPlayer.name} añadido a la sala: ${roomName}`);
                 }
                 break;
 
-
             case 'updatePosition':
                 const playerUpdate = rooms["abc123"].players.find(player => player.id === data.id);
                 playerUpdate.x = data.x;
-                playerUpdate.y=data.y
-                
+                playerUpdate.y = data.y
+
                 rooms["abc123"].players.forEach((player) => {
-                    if(player.id != sessionId){
+                    if (player.id != sessionId) {
                         playesChannel[player.id].send(JSON.stringify({
                             type: 'playerMoved',
-                            id:playerUpdate.id,
-                            x:playerUpdate.x,
+                            id: playerUpdate.id,
+                            x: playerUpdate.x,
                             y: playerUpdate.y,
-                            message:"renderizar"
+                            message: "renderizar"
                         }));
                     }
-                    
+
                 });
                 break;
-                case "flagCaptured":
-                    var team=null
-                    var name = null;
-                    
-                    rooms["abc123"].players.forEach((player) => {
 
-                        if(player.id == sessionId){
-                            player.flag = true;
-                            if(player.team==="A"){
-                                team="B"
-                            }else{
-                                team="A"
-        
-                            }
-                            name = player.name
-                        }
-                        
-                    });
-                    
-                    rooms["abc123"].players.forEach((player) => {
-                        
-                        playesChannel[player.id].send(JSON.stringify({
-                            type: 'flagCaptured',
-                            name: name,
-                            team:team,
-                        }));
-                        
-                        
-                    });
-
-                    break
-
-
-                    case 'actualizarPuntos':
-                        rooms["abc123"].players.find(player => player.id == sessionId).score+=1
-                        const teamScore = rooms["abc123"].players.find(player => player.id == sessionId).score;
-                        console.log(teamScore)
-
-
-
-                        rooms["abc123"].players.forEach((player) => {
-                            
-                            playesChannel[player.id].send(JSON.stringify({
-                                type: 'actualizarPuntos',
-                                team:teamScore,
-                            }));
-                        
-                        
-                        });
-                    break
-                    case 'finish':
-                         
-                    rooms["abc123"].players.forEach((player) => {
-                            
-                        playesChannel[player.id].send(JSON.stringify({
-                            type: 'finish'
-                        }));
-                    
-                    
-                    });
-
-
-                case 'powerCaptured':
-
-                var team=null
+            case "flagCaptured":
+                var team = null
                 var name = null;
-                
+
                 rooms["abc123"].players.forEach((player) => {
 
-                    if(player.id == sessionId){
+                    if (player.id == sessionId) {
                         player.flag = true;
-                        if(player.team==="A"){
-                            team="B"
-                        }else{
-                            team="A"
-    
+                        if (player.team === "A") {
+                            team = "B"
+                        } else {
+                            team = "A"
+
                         }
                         name = player.name
                     }
-                    
+
+                });
+
+                rooms["abc123"].players.forEach((player) => {
+
+                    playesChannel[player.id].send(JSON.stringify({
+                        type: 'flagCaptured',
+                        name: name,
+                        team: team,
+                    }));
+
+
+                });
+
+                break
+
+            case 'actualizarPuntos':
+                var team = null
+                var name = null;
+
+                rooms["abc123"].players.forEach((player) => {
+
+                    if (player.id == sessionId) {
+                        console.log(player)
+                        name = player.name
+                        team = player.team
+                        if (team === "A") {
+                            team = "EquipoA"
+                        } else {
+                            team = "EquipoB"
+                        }
+                    }
+
                 });
                 
+
+
+
                 rooms["abc123"].players.forEach((player) => {
-                    
+                    playesChannel[player.id].send(JSON.stringify({
+                        type: 'actualizarPuntos',
+                        team: team,
+                        name: name
+                    }));
+                });
+                break
+
+            case 'finish':
+
+                rooms["abc123"].players.forEach((player) => {
+
+                    playesChannel[player.id].send(JSON.stringify({
+                        type: 'finish'
+                    }));
+
+
+                });
+
+            case 'powerCaptured':
+
+                var team = null
+                var name = null;
+
+                rooms["abc123"].players.forEach((player) => {
+
+                    if (player.id == sessionId) {
+                        player.flag = true;
+                        if (player.team === "A") {
+                            team = "B"
+                        } else {
+                            team = "A"
+
+                        }
+                        name = player.name
+                    }
+
+                });
+
+                rooms["abc123"].players.forEach((player) => {
+
                     playesChannel[player.id].send(JSON.stringify({
                         type: 'powerCaptured',
                         name: name,
-                        team:team,
+                        team: team,
                     }));
-                    
-                    
+
+
                 });
                 break
         }
